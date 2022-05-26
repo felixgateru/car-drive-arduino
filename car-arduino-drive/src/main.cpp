@@ -2,9 +2,13 @@
 #include <CircularBuffer.h>
 
 #define CH1 15 // connected on pin 15
+#define MOTOR_PIN_1   4
+#define MOTOR_PIN_2   16
+#define MOTOR_SPEED_PIN   17
 
  
 int ch1Value;
+int motor_value;
 
 CircularBuffer<int,10> write_values; 
  
@@ -23,6 +27,10 @@ void setup(){
   
   // setting up the channel as input
   pinMode(CH1, INPUT);
+  pinMode(MOTOR_PIN_1,OUTPUT);
+  pinMode(MOTOR_PIN_2,OUTPUT);
+  pinMode(MOTOR_SPEED_PIN,OUTPUT);
+
 }
  
  
@@ -30,10 +38,24 @@ void loop() {
   
   // Get values for each channel
 
+  //using a buffer to waste input times
 
   while(!write_values.unshift(readChannel(CH1, -100, 100, 0))){
      Serial.print("Ch1: ");
-     Serial.print(write_values.first());
+     motor_value = write_values.first();
+     Serial.print(motor_value);
+     if(motor_value>0){
+       digitalWrite(MOTOR_PIN_1,HIGH);
+       digitalWrite(MOTOR_PIN_2,LOW);
+       analogWrite(MOTOR_SPEED_PIN,map(motor_value,0,100,0,255));
+
+     }
+     else if(motor_value<1){
+       digitalWrite(MOTOR_PIN_1,LOW);
+       digitalWrite(MOTOR_PIN_2,HIGH);
+       motor_value = -motor_value;
+       analogWrite(MOTOR_SPEED_PIN,map(motor_value,0,100,0,255));
+     }
      write_values.clear();
 
   }
